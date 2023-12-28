@@ -1,0 +1,90 @@
+import random
+
+def gcd(a, b):
+    while b != 0:
+        a, b = b, a % b
+    return a
+
+def is_prime(num):
+    if num == 2:
+        return True
+    if num < 2 or num % 2 == 0:
+        return False
+    for n in range(3, int(num**0.5)+2, 2):
+        if num % n == 0:
+            return False
+    return True
+
+
+def multiplicative_inverse(e, phi):
+    def extended_gcd(a, b):
+        if a == 0:
+            return (b, 0, 1)
+        else:
+            g, x, y = extended_gcd(b % a, a)
+            return (g, y - (b // a) * x, x)
+
+    g, x, _ = extended_gcd(e, phi)
+    if g != 1:
+        raise Exception('No multiplicative inverse found')
+    else:
+        return x % phi
+
+
+
+def generate_keypair(p, q):
+    if not (is_prime(p) and is_prime(q)):
+        raise ValueError('Both numbers must be prime.')
+    elif p == q:
+        raise ValueError('p and q cannot be equal')
+    n = p * q
+    phi = (p-1) * (q-1)
+    e = random.randrange(1, phi)
+    g = gcd(e, phi)
+    while g != 1:
+        e = random.randrange(1, phi)
+        g = gcd(e, phi)
+    d = multiplicative_inverse(e, phi)
+    return ((e, n), (d, n))
+
+def encrypt(pk, plaintext):
+    key, n = pk
+    cipher = [(ord(char) ** key) % n for char in plaintext]
+    return cipher
+
+def decrypt(pk, ciphertext):
+    key, n = pk
+    plain = [chr((char ** key) % n) for char in ciphertext]
+    return ''.join(plain)
+
+
+public_key, private_key = generate_keypair(17, 19)
+print ("The public key is : ",public_key)
+print ("The privaate key is : ", private_key)
+public_key_insert = (0,0)
+message = input("What message do you whant to encrypt ? : ")
+while public_key != public_key_insert :
+    public_key_insert1 = int(input("What is the first key (e) ? :"))
+    public_key_insert2 = int(input("What is the second key (n) ? :"))
+    public_key_insert = (public_key_insert1,public_key_insert2)
+print("The message : ",message," has been encrypted with the key : ",public_key)
+print("Here is the encrypted message : ")
+print(encrypt(public_key, message))
+
+rep = ""
+while rep != "yes" and rep != "no":
+    rep = input("Do you want to decrypt a message ? ").lower()
+if rep == 'no':
+    print("Thanks")
+else:
+    message_a_decrypter = input("What message do you want to decrypt ? (Enter the numbers with spaces bewteen) ")
+    message_a_decrypter = list(map(int, message_a_decrypter.split()))
+    private_key_insert = (0,0)
+    while private_key != private_key_insert :
+        private_key_insert1 = int(input("What is the first key (d) ? :"))
+        private_key_insert2 = int(input("What is the second key(n) ? :"))
+        private_key_insert = (private_key_insert1,private_key_insert2)
+    print("The message : ",message_a_decrypter," will be decrypted with the key : ",private_key_insert)
+    print("Here is the decrypted message : ")
+    print(decrypt(private_key_insert, message_a_decrypter))
+
